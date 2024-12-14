@@ -1,0 +1,130 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: quarkus-template
+objects:
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: quarkus
+      app.kubernetes.io/component: quarkus
+      app.kubernetes.io/instance: quarkus
+    name: quarkus
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - annotations:
+        openshift.io/imported-from: optimoprimo/quarkus
+      from:
+        kind: DockerImage
+        name: optimoprimo/quarkus
+      generation: null
+      importPolicy:
+        importMode: Legacy
+      name: latest
+      referencePolicy:
+        type: ""
+  status:
+    dockerImageRepository: ""
+- apiVersion: v1
+  data:
+    PROPERTI_ONE: U0VDUkVUTwo=
+  kind: Secret
+  metadata:
+    name: quarkus
+    namespace: dev
+  type: Opaque
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"quarkus:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"quarkus\")].image"}]'
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: quarkus
+      app.kubernetes.io/component: quarkus
+      app.kubernetes.io/instance: quarkus
+    name: quarkus
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        deployment: quarkus
+    strategy: {}
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          deployment: quarkus
+      spec:
+        containers:
+        - env:
+          - name: PROPERTI_TWO
+            value: TWO
+          - name: PROPERTI_ONE
+            valueFrom:
+              secretKeyRef:
+                key: PROPERTI_ONE
+                name: quarkus
+          image: ' '
+          name: quarkus
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 8443
+            protocol: TCP
+          resources: {}
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: quarkus
+      app.kubernetes.io/component: quarkus
+      app.kubernetes.io/instance: quarkus
+    name: quarkus
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: 8443-tcp
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      deployment: quarkus
+  status:
+    loadBalancer: {}
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    labels:
+      app: quarkus
+    name: quarkus
+    namespace: dev
+  spec:
+    host: quarkus-dev.apps.ocp4.example.com
+    port:
+      targetPort: 8080-tcp
+    tls:
+      termination: edge
+    to:
+      kind: Service
+      name: quarkus
+      weight: 100
+    wildcardPolicy: None
+labels:
+  app: template-quarkus
