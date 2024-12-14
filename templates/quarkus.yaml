@@ -81,7 +81,12 @@ objects:
             protocol: TCP
           - containerPort: 8443
             protocol: TCP
-          resources: {}
+          resources: 
+            requests:
+              cpu: 100m
+              memory: 50Mi
+            limits:
+              memory: 100Mi
   status: {}
 - apiVersion: v1
   kind: Service
